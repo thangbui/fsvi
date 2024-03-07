@@ -23,4 +23,10 @@ The binary classification example is not tested yet. Parameter space works fine:
 python run_bincla_vi.py --space=param
 ```
 
+To run logistic regression:
+```
+python run_logreg_vi.py --space=function_sampling
+python run_logreg_vi.py --space=param
+```
+
 Each of these runs will save a couple of figs to /tmp/ showing the objective trajectory and the data + predictions.

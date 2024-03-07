@@ -221,6 +221,7 @@ def run_exp(
             )
 
     for space_server in ["param", "function_sampling"]:
+        print(f"merging {space_server}...")
 
         if space_server.startswith("function"):
             x_context_bounds = [-10, 10]
