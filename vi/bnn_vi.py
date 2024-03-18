@@ -339,7 +339,7 @@ class MLP(nn.Module):
         if space == "param":
             self.merge_param(clients)
         elif space == "function_sampling":
-            self.merge_function_sampling(
+            losses = self.merge_function_sampling(
                 clients,
                 optimizer,
                 no_epochs,
@@ -350,6 +350,7 @@ class MLP(nn.Module):
                 no_context_points,
                 no_context_samples,
             )
+            return losses
         
     def merge_param(self, clients):
         no_clients = len(clients)

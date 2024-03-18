@@ -3,6 +3,7 @@ import numpy as np
 
 from torch.utils.data import DataLoader, Dataset
 
+
 # Data splitting functions.
 def homogeneous_split(x, y, num_clients=100, seed=42):
     np.random.seed(seed)
@@ -11,8 +12,9 @@ def homogeneous_split(x, y, num_clients=100, seed=42):
     for i in range(num_clients):
         client_idx = perm[i::num_clients]
         client_data.append({"x": x[client_idx], "y": y[client_idx]})
-    
+
     return client_data
+
 
 # Data splitting functions.
 def inhomogeneous_split(x, y, num_clients=100, seed=42):
@@ -22,12 +24,27 @@ def inhomogeneous_split(x, y, num_clients=100, seed=42):
     x, idx = torch.sort(x, dim=0)
     y = y[idx[:, 0], :]
     for i in range(num_clients):
-        cur_x = x[i*num_client_data:min((i+1)*num_client_data, len(x))]
-        cur_y = y[i*num_client_data:min((i+1)*num_client_data, len(y))]
+        cur_x = x[i * num_client_data:min((i + 1) * num_client_data, len(x))]
+        cur_y = y[i * num_client_data:min((i + 1) * num_client_data, len(y))]
         client_data.append({"x": cur_x, "y": cur_y})
 
     return client_data
 
+
+# Data splitting functions.
+def inhomogeneous_split_logreg(x, y, num_clients=100, seed=42):
+    if num_clients == 1:
+        return [{"x": x, "y": y}]
+
+    condition1 = (5 / 6 * x[:, 0] - 2 >= x[:, 1]) & (1 / 2 * x[:, 0] + x[:, 1] < 6)
+    condition2 = (1 / 2 * x[:, 0] + x[:, 1] >= 6) & (x[:, 1] > 5 / 6 * x[:, 0] - 2)
+    client_data = []
+    set1 = condition1 | condition2
+    set2 = ~set1
+    client_data.append({"x": x[set1], "y": y[set1]})
+    client_data.append({"x": x[set2], "y": y[set2]})
+    print(len(x), len(x[set1]), len(y[set2]))
+    return client_data
 
 
 def get_reg_data(dataset, N, real_noise_std):
@@ -48,7 +65,7 @@ def get_reg_data(dataset, N, real_noise_std):
         x = torch.randn(N, 1) * 2
         x = torch.where(x < 0, x - 4, x)
         x = torch.where(x < 0, x, x + 0.5)
-        y = x**3
+        y = x ** 3
         # print(x.mean(), x.std())
         # print(y.mean(), y.std())
         # x = (x - x.mean()) / x.std()
@@ -168,7 +185,7 @@ class Banana(Dataset):
     def filter_by_input(self, boundary_list=None):
         if boundary_list:
             mask = (self.data[:, 0] < boundary_list[1]) & (
-                self.data[:, 0] > boundary_list[0]
+                    self.data[:, 0] > boundary_list[0]
             )
         else:
             mask = torch.ones_like(self.targets).bool()
